@@ -1,0 +1,187 @@
+# Auto Deploy Workflow
+# Automatically deploys to server when merging to main
+# Includes smart error handling and feedback for Claude
+
+name: Auto Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: 'Force deploy even if no changes'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: write
+  issues: write
+
+env:
+  DEPLOY_LOG_FILE: "deploy-feedback.log"
+
+jobs:
+  deploy:
+    name: Deploy to Server
+    runs-on: ubuntu-latest
+    outputs:
+      deploy_status: ${{ steps.deploy.outputs.status }}
+      deploy_url: ${{ steps.deploy.outputs.url }}
+      error_message: ${{ steps.deploy.outputs.error }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Deploy to Server
+        id: deploy
+        run: |
+          # Configuration from secrets
+          SERVER_HOST="${{ secrets.SERVER_HOST }}"
+          SERVER_USER="${{ secrets.SERVER_USER }}"
+          DEPLOY_PATH="${{ secrets.DEPLOY_PATH }}"
+          SITE_URL="${{ secrets.SITE_URL }}"
+
+          # Create deploy feedback file
+          echo "=== Deploy Started ===" > $DEPLOY_LOG_FILE
+          echo "Timestamp: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $DEPLOY_LOG_FILE
+          echo "Commit: ${{ github.sha }}" >> $DEPLOY_LOG_FILE
+          echo "Branch: ${{ github.ref_name }}" >> $DEPLOY_LOG_FILE
+          echo "" >> $DEPLOY_LOG_FILE
+
+          # Run deploy script and capture output
+          set +e
+          DEPLOY_OUTPUT=$(ssh -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_HOST} "
+            cd ${DEPLOY_PATH} && \
+            git fetch origin main && \
+            git reset --hard origin/main && \
+            if [ -f deploy.sh ]; then
+              chmod +x deploy.sh && \
+              ./deploy.sh 2>&1
+            else
+              echo 'No deploy.sh found, running default deployment...'
+              echo 'Default deployment complete'
+            fi
+          " 2>&1)
+          DEPLOY_EXIT_CODE=$?
+          set -e
+
+          echo "$DEPLOY_OUTPUT" >> $DEPLOY_LOG_FILE
+
+          if [ $DEPLOY_EXIT_CODE -eq 0 ]; then
+            echo "=== Deploy Successful ===" >> $DEPLOY_LOG_FILE
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "url=${SITE_URL}" >> $GITHUB_OUTPUT
+            echo "error=" >> $GITHUB_OUTPUT
+          else
+            echo "=== Deploy Failed ===" >> $DEPLOY_LOG_FILE
+            echo "Exit Code: $DEPLOY_EXIT_CODE" >> $DEPLOY_LOG_FILE
+            echo "status=failed" >> $GITHUB_OUTPUT
+            echo "url=" >> $GITHUB_OUTPUT
+
+            # Extract meaningful error message
+            ERROR_MSG=$(echo "$DEPLOY_OUTPUT" | grep -iE "(error|failed|exception|fatal)" | head -5 || echo "$DEPLOY_OUTPUT" | tail -10)
+            echo "error<<EOF" >> $GITHUB_OUTPUT
+            echo "$ERROR_MSG" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload Deploy Log
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-log-${{ github.run_number }}
+          path: ${{ env.DEPLOY_LOG_FILE }}
+          retention-days: 30
+
+      - name: Health Check
+        id: health
+        if: steps.deploy.outputs.status == 'success'
+        run: |
+          SITE_URL="${{ secrets.SITE_URL }}"
+
+          echo "Performing health check on $SITE_URL..."
+
+          # Wait for service to be ready
+          sleep 5
+
+          # Perform health check
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$SITE_URL" || echo "000")
+
+          if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 400 ]; then
+            echo "Health check passed! Status: $HTTP_STATUS"
+            echo "healthy=true" >> $GITHUB_OUTPUT
+          else
+            echo "Health check failed! Status: $HTTP_STATUS"
+            echo "healthy=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Issue on Failure
+        if: steps.deploy.outputs.status == 'failed'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const errorMsg = `${{ steps.deploy.outputs.error }}`;
+            const commitSha = '${{ github.sha }}';
+            const runUrl = '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}';
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🚨 Deploy Failed - ${new Date().toISOString().split('T')[0]}`,
+              body: `## Deploy Failed
+
+**Commit:** ${commitSha}
+**Workflow Run:** ${runUrl}
+
+### Error Details
+\`\`\`
+${errorMsg}
+\`\`\`
+
+### For Claude
+Please investigate this deployment failure:
+1. Check the error message above
+2. Review recent commits that might have caused this
+3. Check \`deploy.sh\` for any issues
+4. Fix the code and create a new PR
+
+### Quick Links
+- [View Workflow Logs](${runUrl})
+- [View Commit](https://github.com/${{ github.repository }}/commit/${commitSha})
+`,
+              labels: ['deploy-failed', 'claude-action-needed']
+            });
+
+      - name: Summary
+        run: |
+          echo "## Deploy Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.deploy.outputs.status }}" == "success" ]; then
+            echo "✅ **Status:** Deployed Successfully" >> $GITHUB_STEP_SUMMARY
+            echo "🌐 **URL:** ${{ steps.deploy.outputs.url }}" >> $GITHUB_STEP_SUMMARY
+            if [ "${{ steps.health.outputs.healthy }}" == "true" ]; then
+              echo "💚 **Health Check:** Passed" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "⚠️ **Health Check:** Failed (site may still be starting)" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "❌ **Status:** Deploy Failed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Error" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            echo "${{ steps.deploy.outputs.error }}" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          fi
