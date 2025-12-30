@@ -6,9 +6,9 @@ name: Test & Lint
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, claude/main]
   pull_request:
-    branches: [main]
+    branches: [main, claude/main]
 
 jobs:
   php-check:

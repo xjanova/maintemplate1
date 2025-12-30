@@ -6,9 +6,9 @@ name: Security Scan
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, claude/main]
   pull_request:
-    branches: [main]
+    branches: [main, claude/main]
   schedule:
     - cron: '0 0 * * 0'  # Weekly on Sunday
   workflow_dispatch:

@@ -11,6 +11,7 @@ on:
   push:
     branches:
       - main
+      - claude/main
   workflow_dispatch:
     inputs:
       force_deploy:
@@ -106,11 +107,12 @@ jobs:
 
       - name: Upload Deploy Log
         uses: actions/upload-artifact@v4
-        if: always()
+        if: always() && steps.check-config.outputs.configured == 'true'
         with:
           name: deploy-log-${{ github.run_number }}
           path: ${{ env.DEPLOY_LOG_FILE }}
           retention-days: 30
+          if-no-files-found: ignore
 
       - name: Health Check
         id: health
@@ -179,11 +181,15 @@ Claude กำลังพยายามแก้ไข..." \
             });
 
       - name: Summary
+        if: always()
         run: |
           echo "## 🚀 Deploy Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
-          if [ "${{ steps.deploy.outputs.status }}" == "success" ]; then
+          if [ "${{ steps.check-config.outputs.configured }}" != "true" ]; then
+            echo "⏭️ **Status:** Skipped (secrets not configured)" >> $GITHUB_STEP_SUMMARY
+            echo "📋 **Action:** Configure SSH_PRIVATE_KEY, SERVER_HOST, SERVER_USER, DEPLOY_PATH in repository secrets" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ steps.deploy.outputs.status }}" == "success" ]; then
             echo "✅ **Status:** Deployed Successfully" >> $GITHUB_STEP_SUMMARY
             echo "🌐 **URL:** ${{ steps.deploy.outputs.url }}" >> $GITHUB_STEP_SUMMARY
             echo "📦 **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
