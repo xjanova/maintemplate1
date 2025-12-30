@@ -29,6 +29,8 @@ jobs:
   deploy:
     name: Deploy to Server
     runs-on: ubuntu-latest
+    # Skip if triggered by bot commits (prevents loops)
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
     outputs:
       status: ${{ steps.deploy.outputs.status }}
       url: ${{ steps.deploy.outputs.url }}
@@ -39,7 +41,19 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Check Deploy Configuration
+        id: check-config
+        run: |
+          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ] || [ -z "${{ secrets.SERVER_HOST }}" ]; then
+            echo "configured=false" >> $GITHUB_OUTPUT
+            echo "::warning::Deploy secrets not configured. Skipping deployment."
+            echo "Please configure: SSH_PRIVATE_KEY, SERVER_HOST, SERVER_USER, DEPLOY_PATH"
+          else
+            echo "configured=true" >> $GITHUB_OUTPUT
+          fi
+
       - name: Setup SSH
+        if: steps.check-config.outputs.configured == 'true'
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
@@ -54,6 +68,7 @@ jobs:
 
       - name: Deploy to Server
         id: deploy
+        if: steps.check-config.outputs.configured == 'true'
         run: |
           echo "🚀 Starting deployment..."
           echo "Server: ${{ secrets.SERVER_HOST }}"
@@ -81,6 +96,13 @@ jobs:
             echo "status=failed" >> $GITHUB_OUTPUT
             echo "url=" >> $GITHUB_OUTPUT
           fi
+
+      - name: Skip Deploy Notice
+        if: steps.check-config.outputs.configured != 'true'
+        id: deploy-skip
+        run: |
+          echo "status=skipped" >> $GITHUB_OUTPUT
+          echo "Deployment skipped - secrets not configured"
 
       - name: Upload Deploy Log
         uses: actions/upload-artifact@v4
