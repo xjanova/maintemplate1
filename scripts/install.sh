@@ -501,14 +501,19 @@ step_configure_environment() {
         LINE_USER_ID=$(ask_question "LINE User ID (ผู้รับแจ้งเตือน)" "")
 
         echo ""
-        print_substep "Claude AI Integration"
-        echo ""
-        echo -e "${WHITE}  เพื่อให้ LINE Bot สามารถตอบคำถามได้อัจฉริยะ${NC}"
-        echo -e "${WHITE}  ต้องใช้ Claude API Key จาก Anthropic${NC}"
-        echo ""
-        echo -e "${CYAN}  Get your API key at: https://console.anthropic.com/${NC}"
-        echo ""
-        CLAUDE_API_KEY=$(ask_question "Claude API Key (optional)" "")
+        if ask_yes_no "ต้องการเปิดใช้ Claude AI สำหรับตอบคำถาม? (ไม่จำเป็น)" "n"; then
+            print_substep "Claude AI Integration"
+            echo ""
+            echo -e "${WHITE}  Claude AI จะทำให้ Bot ตอบคำถามได้อัจฉริยะ${NC}"
+            echo -e "${WHITE}  ถ้าไม่ใส่ Bot จะทำงานในโหมดแจ้งเตือนอย่างเดียว${NC}"
+            echo ""
+            echo -e "${CYAN}  Get your API key at: https://console.anthropic.com/${NC}"
+            echo ""
+            CLAUDE_API_KEY=$(ask_question "Claude API Key" "")
+        else
+            CLAUDE_API_KEY=""
+            echo -e "${GREEN}  ✓ Bot จะทำงานในโหมดแจ้งเตือน${NC}"
+        fi
         CONFIGURE_LINE="yes"
     else
         LINE_CHANNEL_ACCESS_TOKEN=""

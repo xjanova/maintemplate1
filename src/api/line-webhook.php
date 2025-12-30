@@ -65,11 +65,12 @@ function verifySignature(string $body, string $signature, string $channelSecret)
 }
 
 /**
- * Ask Claude and get response
+ * Process message - use Claude if available, otherwise simple responses
  */
 function askClaude(string $message, string $userId, string $apiKey): string {
+    // If Claude API is not configured, use simple response mode
     if (empty($apiKey)) {
-        return "Claude API key not configured. Please set CLAUDE_API_KEY in environment.";
+        return getSimpleResponse($message);
     }
 
     // Load conversation history
@@ -106,6 +107,99 @@ function askClaude(string $message, string $userId, string $apiKey): string {
     }
 
     return "Error: " . $response['error'];
+}
+
+/**
+ * Get simple response when Claude API is not configured
+ * Provides basic status info and helpful messages
+ */
+function getSimpleResponse(string $message): string {
+    $projectName = getenv('APP_NAME') ?: 'XClaude Project';
+    $siteUrl = getenv('SITE_URL') ?: '';
+    $lowerMessage = mb_strtolower($message);
+
+    // Check for status-related keywords
+    if (preg_match('/(status|สถานะ|deploy|ดีพลอย)/iu', $message)) {
+        return getDeployStatus();
+    }
+
+    // Check for help keywords
+    if (preg_match('/(help|ช่วย|วิธี|how)/iu', $message)) {
+        return "📋 {$projectName}\n\n" .
+               "คำสั่งที่ใช้ได้:\n" .
+               "• พิมพ์ 'status' หรือ 'สถานะ' - ดูสถานะ deploy\n" .
+               "• พิมพ์ 'url' - ดู URL ของเว็บไซต์\n" .
+               "• พิมพ์ 'help' - ดูความช่วยเหลือ\n\n" .
+               ($siteUrl ? "🌐 Website: {$siteUrl}" : "");
+    }
+
+    // Check for URL keywords
+    if (preg_match('/(url|link|ลิงก์|เว็บ)/iu', $message)) {
+        if ($siteUrl) {
+            return "🌐 Website URL:\n{$siteUrl}";
+        }
+        return "❌ ยังไม่ได้ตั้งค่า SITE_URL";
+    }
+
+    // Check for greeting
+    if (preg_match('/(สวัสดี|hello|hi|หวัดดี)/iu', $message)) {
+        return "สวัสดีครับ! 👋\n\n" .
+               "ผมเป็น Bot ของ {$projectName}\n" .
+               "พิมพ์ 'help' เพื่อดูคำสั่งที่ใช้ได้";
+    }
+
+    // Default response
+    return "📌 {$projectName} Bot\n\n" .
+           "ขณะนี้ Bot ทำงานในโหมดแจ้งเตือน\n" .
+           "พิมพ์ 'help' เพื่อดูคำสั่งที่ใช้ได้\n\n" .
+           "💡 ต้องการให้ Bot ตอบคำถามได้อัจฉริยะ?\n" .
+           "ตั้งค่า CLAUDE_API_KEY ใน .env";
+}
+
+/**
+ * Get deploy status from feedback file
+ */
+function getDeployStatus(): string {
+    $feedbackFile = __DIR__ . '/../../.deploy-feedback.json';
+    $projectName = getenv('APP_NAME') ?: 'XClaude Project';
+
+    if (!file_exists($feedbackFile)) {
+        return "📊 สถานะ Deploy\n\n" .
+               "ยังไม่มีข้อมูล deploy\n" .
+               "(ไม่พบไฟล์ .deploy-feedback.json)";
+    }
+
+    $data = json_decode(file_get_contents($feedbackFile), true);
+
+    if (!$data) {
+        return "❌ ไม่สามารถอ่านข้อมูล deploy ได้";
+    }
+
+    $status = $data['status'] ?? 'unknown';
+    $version = $data['version'] ?? '-';
+    $timestamp = $data['timestamp'] ?? '-';
+    $siteUrl = $data['site_url'] ?? getenv('SITE_URL') ?: '-';
+
+    $statusIcon = $status === 'success' ? '✅' : '❌';
+    $statusText = $status === 'success' ? 'สำเร็จ' : 'ล้มเหลว';
+
+    $response = "📊 สถานะ Deploy - {$projectName}\n\n" .
+                "{$statusIcon} สถานะ: {$statusText}\n" .
+                "🏷️ Version: {$version}\n" .
+                "🕐 เวลา: {$timestamp}\n";
+
+    if ($siteUrl !== '-') {
+        $response .= "🌐 URL: {$siteUrl}\n";
+    }
+
+    if (!empty($data['errors'])) {
+        $response .= "\n❌ Errors:\n";
+        foreach (array_slice($data['errors'], 0, 3) as $error) {
+            $response .= "• {$error}\n";
+        }
+    }
+
+    return $response;
 }
 
 /**
