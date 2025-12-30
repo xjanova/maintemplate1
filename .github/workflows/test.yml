@@ -25,33 +25,54 @@ jobs:
 
       - name: Check PHP Syntax
         run: |
-          find . -name "*.php" -not -path "./vendor/*" | xargs -n1 php -l
+          php_files=$(find . -name "*.php" -not -path "./vendor/*" -type f)
+          if [ -n "$php_files" ]; then
+            echo "$php_files" | xargs -n1 php -l
+          else
+            echo "No PHP files found to check"
+          fi
 
       - name: PHP CodeSniffer
-        if: hashFiles('composer.json') != ''
         run: |
-          composer global require squizlabs/php_codesniffer || true
-          ~/.composer/vendor/bin/phpcs --standard=PSR12 --ignore=vendor,storage . || true
+          if [ -f "composer.json" ]; then
+            composer global require squizlabs/php_codesniffer || true
+            ~/.composer/vendor/bin/phpcs --standard=PSR12 --ignore=vendor,storage . || true
+          else
+            echo "No composer.json found, skipping PHP CodeSniffer"
+          fi
 
   frontend-check:
     name: Frontend Check
     runs-on: ubuntu-latest
-    if: hashFiles('package.json') != ''
 
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check for package.json
+        id: check-package
+        run: |
+          if [ -f "package.json" ]; then
+            echo "has_package=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_package=false" >> $GITHUB_OUTPUT
+            echo "No package.json found, skipping frontend checks"
+          fi
+
       - name: Setup Node
+        if: steps.check-package.outputs.has_package == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          cache: ${{ hashFiles('package-lock.json') && 'npm' || '' }}
 
       - name: Install
+        if: steps.check-package.outputs.has_package == 'true'
         run: npm ci || npm install
 
       - name: Lint
+        if: steps.check-package.outputs.has_package == 'true'
         run: npm run lint || echo "No lint script"
 
       - name: Build
+        if: steps.check-package.outputs.has_package == 'true'
         run: npm run build || echo "No build script"
