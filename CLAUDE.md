@@ -351,16 +351,21 @@ GitHub Action `security.yml` จะ:
 **GitHub Secrets ที่ต้องตั้งค่า:**
 ```
 LINE_CHANNEL_ACCESS_TOKEN=your_channel_access_token
+LINE_USER_ID=Uxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
+
+**วิธีหา LINE User ID:**
+1. Add Friend กับ LINE OA ของคุณ
+2. ตั้ง Webhook URL แล้วดู event ที่ส่งมา (userId ใน source object)
+3. หรือใช้ LINE Bot SDK เพื่อดึง User ID
 
 **ใน `.env` (สำหรับการพัฒนา):**
 ```env
 LINE_CHANNEL_ID=your_channel_id
 LINE_CHANNEL_SECRET=your_channel_secret
 LINE_CHANNEL_ACCESS_TOKEN=your_channel_access_token
+LINE_USER_ID=Uxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
-
-> หมายเหตุ: ผู้ใช้ต้อง Add Friend กับ LINE OA ก่อนจึงจะได้รับแจ้งเตือน
 
 ---
 

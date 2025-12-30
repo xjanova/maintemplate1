@@ -135,12 +135,13 @@ jobs:
       - name: LINE OA Notify on Success
         if: steps.deploy.outputs.status == 'success' && env.LINE_CONFIGURED == 'true'
         env:
-          LINE_CONFIGURED: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN != '' }}
+          LINE_CONFIGURED: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN != '' && secrets.LINE_USER_ID != '' }}
         run: |
-          curl -s -X POST https://api.line.me/v2/bot/message/broadcast \
+          curl -s -X POST https://api.line.me/v2/bot/message/push \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}" \
             -d '{
+              "to": "${{ secrets.LINE_USER_ID }}",
               "messages": [
                 {
                   "type": "text",
@@ -152,12 +153,13 @@ jobs:
       - name: LINE OA Notify on Failure
         if: steps.deploy.outputs.status == 'failed' && env.LINE_CONFIGURED == 'true'
         env:
-          LINE_CONFIGURED: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN != '' }}
+          LINE_CONFIGURED: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN != '' && secrets.LINE_USER_ID != '' }}
         run: |
-          curl -s -X POST https://api.line.me/v2/bot/message/broadcast \
+          curl -s -X POST https://api.line.me/v2/bot/message/push \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}" \
             -d '{
+              "to": "${{ secrets.LINE_USER_ID }}",
               "messages": [
                 {
                   "type": "text",

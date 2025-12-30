@@ -490,11 +490,18 @@ step_configure_environment() {
         echo ""
         echo -e "${WHITE}  1. Create a Messaging API channel${NC}"
         echo -e "${WHITE}  2. Get Channel Access Token (long-lived)${NC}"
+        echo -e "${WHITE}  3. Add Friend กับ OA แล้วดู Webhook event เพื่อหา User ID${NC}"
         echo ""
         LINE_CHANNEL_ACCESS_TOKEN=$(ask_question "LINE Channel Access Token" "")
+        echo ""
+        echo -e "${WHITE}  User ID ขึ้นต้นด้วย 'U' ตามด้วยตัวอักษร 33 ตัว${NC}"
+        echo -e "${WHITE}  เช่น: Uxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx${NC}"
+        echo ""
+        LINE_USER_ID=$(ask_question "LINE User ID (ผู้รับแจ้งเตือน)" "")
         CONFIGURE_LINE="yes"
     else
         LINE_CHANNEL_ACCESS_TOKEN=""
+        LINE_USER_ID=""
         CONFIGURE_LINE="no"
     fi
 
@@ -533,6 +540,7 @@ DB_PASS=$DB_PASS
 
 # LINE OA Messaging API
 LINE_CHANNEL_ACCESS_TOKEN=$LINE_CHANNEL_ACCESS_TOKEN
+LINE_USER_ID=$LINE_USER_ID
 
 # Security
 ALLOWED_HOSTS=$DOMAIN
@@ -761,6 +769,7 @@ step_setup_github_secrets() {
     echo -e "${WHITE}  | SITE_URL              | ${CYAN}$SITE_URL${NC}"
     if [ -n "$LINE_CHANNEL_ACCESS_TOKEN" ]; then
     echo -e "${WHITE}  | LINE_CHANNEL_ACCESS_TOKEN | ${CYAN}(Your LINE OA token)${NC}"
+    echo -e "${WHITE}  | LINE_USER_ID          | ${CYAN}$LINE_USER_ID${NC}"
     fi
     echo -e "${WHITE}  +-----------------------+------------------------------------------+${NC}"
     echo ""
