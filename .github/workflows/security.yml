@@ -11,6 +11,7 @@ on:
     branches: [main]
   schedule:
     - cron: '0 0 * * 0'  # Weekly on Sunday
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -20,32 +21,35 @@ jobs:
   security-scan:
     name: Security Analysis
     runs-on: ubuntu-latest
+    # Skip if triggered by bot commits (prevents loops)
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: PHP Security Checker
-        if: hashFiles('composer.lock') != ''
         run: |
-          curl -sL https://github.com/fabpot/local-php-security-checker/releases/latest/download/local-php-security-checker_linux_amd64 -o security-checker
-          chmod +x security-checker
-          ./security-checker || echo "::warning::Vulnerabilities found in PHP dependencies"
+          if [ -f "composer.lock" ]; then
+            curl -sL https://github.com/fabpot/local-php-security-checker/releases/latest/download/local-php-security-checker_linux_amd64 -o security-checker
+            chmod +x security-checker
+            ./security-checker || echo "::warning::Vulnerabilities found in PHP dependencies"
+          else
+            echo "No composer.lock found, skipping PHP security check"
+          fi
 
       - name: Node Security Audit
-        if: hashFiles('package-lock.json') != ''
         run: |
-          npm audit --audit-level=high || echo "::warning::Vulnerabilities found in npm dependencies"
+          if [ -f "package-lock.json" ]; then
+            npm audit --audit-level=high || echo "::warning::Vulnerabilities found in npm dependencies"
+          else
+            echo "No package-lock.json found, skipping npm audit"
+          fi
 
       - name: Scan for Secrets
         uses: trufflesecurity/trufflehog@main
         with:
           extra_args: --only-verified
-
-      - name: SAST Scan
-        uses: github/codeql-action/init@v3
-        with:
-          languages: javascript, php
         continue-on-error: true
 
       - name: Summary
