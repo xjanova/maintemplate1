@@ -100,9 +100,7 @@ jobs:
 
       - name: Skip Deploy Notice
         if: steps.check-config.outputs.configured != 'true'
-        id: deploy-skip
         run: |
-          echo "status=skipped" >> $GITHUB_OUTPUT
           echo "Deployment skipped - secrets not configured"
 
       - name: Upload Deploy Log
@@ -132,27 +130,41 @@ jobs:
             echo "healthy=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Line Notify on Success
-        if: steps.deploy.outputs.status == 'success' && secrets.LINE_NOTIFY_TOKEN != ''
+      - name: LINE OA Notify on Success
+        if: steps.deploy.outputs.status == 'success' && env.LINE_CONFIGURED == 'true'
+        env:
+          LINE_CONFIGURED: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN != '' && secrets.LINE_USER_ID != '' }}
         run: |
-          curl -s -X POST \
-            -H "Authorization: Bearer ${{ secrets.LINE_NOTIFY_TOKEN }}" \
-            -F "message=✅ Deploy สำเร็จ!
-🌐 URL: ${{ secrets.SITE_URL }}
-📦 Commit: ${{ github.sha }}
-⏰ Time: $(date '+%Y-%m-%d %H:%M:%S')" \
-            https://notify-api.line.me/api/notify || true
+          curl -s -X POST https://api.line.me/v2/bot/message/push \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}" \
+            -d '{
+              "to": "${{ secrets.LINE_USER_ID }}",
+              "messages": [
+                {
+                  "type": "text",
+                  "text": "✅ Deploy สำเร็จ!\n\n🌐 URL: ${{ secrets.SITE_URL }}\n📦 Commit: ${{ github.sha }}\n🏷️ Repo: ${{ github.repository }}"
+                }
+              ]
+            }' || true
 
-      - name: Line Notify on Failure
-        if: steps.deploy.outputs.status == 'failed' && secrets.LINE_NOTIFY_TOKEN != ''
+      - name: LINE OA Notify on Failure
+        if: steps.deploy.outputs.status == 'failed' && env.LINE_CONFIGURED == 'true'
+        env:
+          LINE_CONFIGURED: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN != '' && secrets.LINE_USER_ID != '' }}
         run: |
-          curl -s -X POST \
-            -H "Authorization: Bearer ${{ secrets.LINE_NOTIFY_TOKEN }}" \
-            -F "message=❌ Deploy ล้มเหลว!
-📍 Repo: ${{ github.repository }}
-🔗 Workflow: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-Claude กำลังพยายามแก้ไข..." \
-            https://notify-api.line.me/api/notify || true
+          curl -s -X POST https://api.line.me/v2/bot/message/push \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}" \
+            -d '{
+              "to": "${{ secrets.LINE_USER_ID }}",
+              "messages": [
+                {
+                  "type": "text",
+                  "text": "❌ Deploy ล้มเหลว!\n\n🏷️ Repo: ${{ github.repository }}\n📦 Commit: ${{ github.sha }}\n🔧 Claude กำลังแก้ไข..."
+                }
+              ]
+            }' || true
 
       - name: Create Issue on Failure
         if: steps.deploy.outputs.status == 'failed'
@@ -186,14 +198,19 @@ Claude กำลังพยายามแก้ไข..." \
           echo "## 🚀 Deploy Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
-          if [ "${{ steps.check-config.outputs.configured }}" != "true" ]; then
+          CONFIGURED="${{ steps.check-config.outputs.configured }}"
+          DEPLOY_STATUS="${{ steps.deploy.outputs.status }}"
+
+          if [ "$CONFIGURED" != "true" ]; then
             echo "⏭️ **Status:** Skipped (secrets not configured)" >> $GITHUB_STEP_SUMMARY
             echo "📋 **Action:** Configure SSH_PRIVATE_KEY, SERVER_HOST, SERVER_USER, DEPLOY_PATH in repository secrets" >> $GITHUB_STEP_SUMMARY
-          elif [ "${{ steps.deploy.outputs.status }}" == "success" ]; then
+          elif [ "$DEPLOY_STATUS" == "success" ]; then
             echo "✅ **Status:** Deployed Successfully" >> $GITHUB_STEP_SUMMARY
             echo "🌐 **URL:** ${{ steps.deploy.outputs.url }}" >> $GITHUB_STEP_SUMMARY
             echo "📦 **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-          else
+          elif [ "$DEPLOY_STATUS" == "failed" ]; then
             echo "❌ **Status:** Deploy Failed" >> $GITHUB_STEP_SUMMARY
             echo "📋 **Logs:** Check artifacts for details" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **Status:** Unknown" >> $GITHUB_STEP_SUMMARY
           fi

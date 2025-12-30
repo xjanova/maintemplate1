@@ -331,26 +331,76 @@ GitHub Action `security.yml` จะ:
 
 ---
 
-## 📱 การแจ้งเตือน
+## 📱 LINE OA Integration
 
-### Line OA Notification
+### ความสามารถ
 
-ระบบจะส่งแจ้งเตือนเมื่อ:
+| ฟีเจอร์ | รายละเอียด |
+|---------|------------|
+| 💬 **สนทนากับ Claude** | ส่งข้อความใน LINE แล้วได้คำตอบจาก Claude AI |
+| 🔔 **แจ้งเตือน Deploy** | รับแจ้งเตือนเมื่อ deploy สำเร็จหรือล้มเหลว |
+| 📊 **สถานะโปรเจค** | ถามสถานะการทำงานของระบบ |
+
+### การแจ้งเตือนอัตโนมัติ
 
 | เหตุการณ์ | ข้อความ |
 |----------|---------|
-| Deploy สำเร็จ | ✅ Deploy v1.2.3 สำเร็จ! |
-| Deploy ล้มเหลว | ❌ Deploy ล้มเหลว: [error] |
-| Error เกิน threshold | ⚠️ พบปัญหาต่อเนื่อง ต้องตรวจสอบ |
-| Security Alert | 🔒 พบช่องโหว่ความปลอดภัย |
+| Deploy สำเร็จ | ✅ Deploy สำเร็จ! |
+| Deploy ล้มเหลว | ❌ Deploy ล้มเหลว! |
 
-### ตั้งค่า Line OA
+### ตั้งค่า LINE OA + Claude Bot
 
-ใน `.env`:
-```env
-LINE_CHANNEL_TOKEN=your_channel_token
-LINE_NOTIFY_TOKEN=your_notify_token
+**ขั้นตอนที่ 1: สร้าง LINE OA**
+1. ไปที่ [LINE Developers Console](https://developers.line.biz/console/)
+2. สร้าง Messaging API Channel
+3. คัดลอก Channel ID, Channel Secret, Channel Access Token
+
+**ขั้นตอนที่ 2: ตั้งค่า Webhook**
+1. ใน LINE Developers Console ไปที่ Messaging API
+2. ตั้ง Webhook URL: `https://your-domain.com/src/api/line-webhook.php`
+3. เปิด "Use webhook"
+
+**ขั้นตอนที่ 3: หา User ID**
+1. Add Friend กับ LINE OA ของคุณ
+2. ส่งข้อความทดสอบ
+3. ดู Webhook event ที่ส่งมา (userId ใน source object)
+
+**ขั้นตอนที่ 4: ตั้งค่า Claude API**
+1. ไปที่ [Anthropic Console](https://console.anthropic.com/)
+2. สร้าง API Key
+3. เก็บไว้ใน GitHub Secrets
+
+**GitHub Secrets ที่ต้องตั้งค่า:**
 ```
+LINE_CHANNEL_ACCESS_TOKEN=your_channel_access_token
+LINE_CHANNEL_SECRET=your_channel_secret
+LINE_USER_ID=Uxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+CLAUDE_API_KEY=sk-ant-xxxxxxxxxxxxx
+```
+
+**ใน `.env` บน Server:**
+```env
+LINE_CHANNEL_ID=your_channel_id
+LINE_CHANNEL_SECRET=your_channel_secret
+LINE_CHANNEL_ACCESS_TOKEN=your_channel_access_token
+LINE_USER_ID=Uxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+CLAUDE_API_KEY=sk-ant-xxxxxxxxxxxxx
+```
+
+### วิธีใช้งาน LINE Bot
+
+**โหมดแจ้งเตือน (ไม่ต้องใช้ Claude API):**
+- พิมพ์ `status` หรือ `สถานะ` - ดูสถานะ deploy ล่าสุด
+- พิมพ์ `url` - ดู URL ของเว็บไซต์
+- พิมพ์ `help` - ดูคำสั่งที่ใช้ได้
+- รับแจ้งเตือนอัตโนมัติเมื่อ deploy สำเร็จ/ล้มเหลว
+
+**โหมด AI (ต้องตั้งค่า Claude API):**
+- ส่งข้อความถามอะไรก็ได้ - Claude จะตอบกลับ
+- ถามเรื่องโปรเจค - เช่น "สถานะ deploy ล่าสุดเป็นอย่างไร?"
+- ขอความช่วยเหลือ - เช่น "ช่วยอธิบายวิธีใช้ feature X"
+
+> **หมายเหตุ:** `CLAUDE_API_KEY` เป็น optional - ถ้าไม่ใส่ Bot จะทำงานในโหมดแจ้งเตือนอย่างเดียว
 
 ---
 
@@ -429,8 +479,10 @@ LINE_NOTIFY_TOKEN=your_notify_token
 | Variable | ใช้งาน |
 |----------|--------|
 | `SITE_URL` | URL หลักของเว็บไซต์ |
-| `STAGING_URL` | URL staging |
-| `LINE_CHANNEL_TOKEN` | แจ้งเตือน Line |
+| `LINE_CHANNEL_ACCESS_TOKEN` | Token สำหรับ LINE OA |
+| `LINE_CHANNEL_SECRET` | Secret สำหรับ verify webhook |
+| `LINE_USER_ID` | User ID ผู้รับแจ้งเตือน |
+| `CLAUDE_API_KEY` | API Key สำหรับ Claude AI |
 | `DB_HOST`, `DB_NAME`... | Database connection |
 
 ---
