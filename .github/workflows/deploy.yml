@@ -100,9 +100,7 @@ jobs:
 
       - name: Skip Deploy Notice
         if: steps.check-config.outputs.configured != 'true'
-        id: deploy-skip
         run: |
-          echo "status=skipped" >> $GITHUB_OUTPUT
           echo "Deployment skipped - secrets not configured"
 
       - name: Upload Deploy Log
@@ -200,14 +198,19 @@ jobs:
           echo "## 🚀 Deploy Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
-          if [ "${{ steps.check-config.outputs.configured }}" != "true" ]; then
+          CONFIGURED="${{ steps.check-config.outputs.configured }}"
+          DEPLOY_STATUS="${{ steps.deploy.outputs.status }}"
+
+          if [ "$CONFIGURED" != "true" ]; then
             echo "⏭️ **Status:** Skipped (secrets not configured)" >> $GITHUB_STEP_SUMMARY
             echo "📋 **Action:** Configure SSH_PRIVATE_KEY, SERVER_HOST, SERVER_USER, DEPLOY_PATH in repository secrets" >> $GITHUB_STEP_SUMMARY
-          elif [ "${{ steps.deploy.outputs.status }}" == "success" ]; then
+          elif [ "$DEPLOY_STATUS" == "success" ]; then
             echo "✅ **Status:** Deployed Successfully" >> $GITHUB_STEP_SUMMARY
             echo "🌐 **URL:** ${{ steps.deploy.outputs.url }}" >> $GITHUB_STEP_SUMMARY
             echo "📦 **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-          else
+          elif [ "$DEPLOY_STATUS" == "failed" ]; then
             echo "❌ **Status:** Deploy Failed" >> $GITHUB_STEP_SUMMARY
             echo "📋 **Logs:** Check artifacts for details" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **Status:** Unknown" >> $GITHUB_STEP_SUMMARY
           fi
