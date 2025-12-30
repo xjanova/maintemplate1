@@ -1,105 +1,179 @@
-# Project Template
+# Xclaude Framework
 
-> A professional development template with auto-release, auto-deploy, and Claude integration.
+<div align="center">
 
-## Features
+```
+╔═══════════════════════════════════════════════════════════════════════════╗
+║   __  __    ___ _                 _        ___                            ║
+║   \ \/ /   / __| |__ _ _  _ ___ _| |___   | __| _ __ _ _ __  ___          ║
+║    >  <   | (__| / _` | || / _` | / -_)  | _| '_/ _` | '  \/ -_)         ║
+║   /_/\_\   \___|_\__,_|\_,_\__,_|_\___|  |_||_| \__,_|_|_|_\___|         ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+```
 
-- **Auto Versioning** - Automatic semantic versioning based on commit messages
-- **Auto Release** - GitHub releases created automatically on merge to main
-- **Auto Deploy** - Automatic deployment to your server
-- **Smart Deploy Script** - Detects project type and deploys accordingly
-- **Claude Integration** - Optimized for AI-assisted development
-- **Professional Workflow** - Conventional commits, PR templates, and documentation
+**AI-Powered Development Framework**
 
-## Quick Start
+*"Just tell Claude what you want"*
 
-### 1. Use This Template
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![PHP](https://img.shields.io/badge/PHP-8.2+-purple.svg)](https://php.net)
 
-Click "Use this template" on GitHub to create your repository.
+</div>
 
-### 2. Setup Server Connection
+---
 
-On your deployment server:
+## ภาพรวม
+
+**Xclaude Framework** คือ framework สำหรับพัฒนาเว็บที่ออกแบบมาให้ทำงานร่วมกับ Claude AI ได้อย่างสมบูรณ์แบบ
+
+คุณแค่บอก Claude ว่าต้องการอะไร - Claude จะเขียนโค้ด ทดสอบ และ Deploy ให้อัตโนมัติ
+
+### ความสามารถหลัก
+
+| Feature | Description |
+|---------|-------------|
+| 🤖 **AI เขียนโค้ดให้** | Claude เข้าใจความต้องการและเขียนโค้ดคุณภาพสูง |
+| 🚀 **Auto Deploy** | Merge แล้ว Deploy ขึ้น Server ทันที |
+| 👁️ **ตรวจสอบผลลัพธ์** | Claude เปิดหน้าเว็บจริงและตรวจสอบ |
+| 🔧 **แก้ไขอัตโนมัติ** | พบ error ก็แก้เอง ไม่ต้องรบกวนคุณ |
+| 📱 **แจ้งเตือน Line** | มีปัญหาก็แจ้งผ่าน Line OA ทันที |
+| 🔒 **Security Scan** | ตรวจช่องโหว่ทุกครั้งที่ Deploy |
+
+---
+
+## เริ่มต้นใช้งาน
+
+### 1. สร้าง Repository จาก Template
+
+คลิก **"Use this template"** บน GitHub เพื่อสร้าง repository ใหม่
+
+### 2. ตั้งค่า Server (รันบน VPS ของคุณ)
 
 ```bash
+# Clone repository
 git clone https://github.com/YOUR_USERNAME/YOUR_REPO.git
 cd YOUR_REPO
+
+# รัน wizard ตั้งค่า
 chmod +x install.sh
 ./install.sh
 ```
 
-Follow the prompts to configure deployment.
+Wizard จะช่วย:
+- สร้าง SSH key สำหรับ deploy
+- แสดง secrets ที่ต้องเพิ่มใน GitHub
+- ตั้งค่าการเชื่อมต่อ
 
-### 3. Add GitHub Secrets
+### 3. เพิ่ม GitHub Secrets
 
-Add the secrets shown by `install.sh` to your GitHub repository:
-- Settings → Secrets and variables → Actions → New repository secret
+เพิ่ม secrets ที่ได้จาก `install.sh` ใน GitHub:
+- **Settings** → **Secrets and variables** → **Actions**
 
-See [docs/GITHUB_SECRETS_SETUP.md](docs/GITHUB_SECRETS_SETUP.md) for details.
+| Secret | Description |
+|--------|-------------|
+| `SSH_PRIVATE_KEY` | SSH key สำหรับ deploy |
+| `SERVER_HOST` | IP หรือ hostname ของ server |
+| `SERVER_USER` | SSH username |
+| `DEPLOY_PATH` | Path บน server |
+| `SITE_URL` | URL ของเว็บไซต์ |
+| `LINE_NOTIFY_TOKEN` | (optional) สำหรับแจ้งเตือน Line |
 
-### 4. Start Developing
+### 4. เริ่มพัฒนา!
 
 ```bash
-# Create feature branch
-git checkout -b feature/my-feature
-
-# Make changes and commit
-git add .
-git commit -m "feat: add new feature"
-
-# Push and create PR
-git push -u origin feature/my-feature
-gh pr create
+# พิมพ์ใน Claude Code
+"เพิ่มหน้า login พร้อม OAuth"
 ```
 
-### 5. Deploy
+Claude จะ:
+1. วางแผนและอธิบายสิ่งที่จะทำ
+2. เขียนโค้ด
+3. Commit และ Push
+4. รอ Deploy อัตโนมัติ
+5. เปิดหน้าเว็บตรวจสอบ
+6. แจ้งผลลัพธ์พร้อม URL
 
-Merge PR to `main` → Auto release → Auto deploy
+---
 
-## Project Structure
+## โครงสร้างโปรเจค
 
 ```
-.
-├── .github/workflows/    # GitHub Actions
-│   ├── release.yml       # Auto-release workflow
-│   └── deploy.yml        # Auto-deploy workflow
-├── .claude/commands/     # Claude slash commands
-├── docs/                 # Documentation
-├── deploy.sh             # Smart deploy script
-├── install.sh            # Server setup wizard
-├── CLAUDE.md             # Claude's project guide
-└── README.md             # This file
+xclaude-project/
+├── .xclaude/                    # Core Framework Config
+│   └── config.yml               # การตั้งค่าหลัก
+├── .github/workflows/           # GitHub Actions
+│   ├── deploy.yml               # Auto deploy
+│   ├── release.yml              # Auto release
+│   ├── security.yml             # Security scan
+│   └── test.yml                 # Tests
+├── public/                      # Web Root
+│   ├── index.php                # Entry point
+│   ├── css/                     # Styles
+│   └── js/                      # Scripts
+├── src/                         # Source Code
+│   ├── pages/                   # หน้าเว็บ
+│   ├── components/              # Components
+│   └── layouts/                 # Layouts
+├── config/                      # Configuration
+├── storage/                     # Storage (logs, cache)
+├── deploy.sh                    # Smart deploy script
+├── install.sh                   # Setup wizard
+└── CLAUDE.md                    # คู่มือสำหรับ Claude
 ```
 
-## Documentation
+---
 
-- [Development Guide](docs/DEVELOPMENT.md) - How to develop
-- [GitHub Secrets Setup](docs/GITHUB_SECRETS_SETUP.md) - Server connection setup
-- [Task Tracker](docs/TASKS.md) - Current development tasks
+## Tech Stack
+
+- **Backend:** PHP 8.2+ (Modern PHP)
+- **CSS:** Tailwind CSS 3.x
+- **JavaScript:** Alpine.js 3.x + HTMX
+- **Build:** Vite (optional)
+- **CI/CD:** GitHub Actions
+
+---
 
 ## Commit Convention
 
 | Prefix | Description | Version Bump |
 |--------|-------------|--------------|
-| `feat:` | New feature | Minor (1.x.0) |
-| `fix:` | Bug fix | Patch (1.0.x) |
+| `feat:` | ฟีเจอร์ใหม่ | Minor (1.x.0) |
+| `fix:` | แก้บั๊ก | Patch (1.0.x) |
 | `feat!:` | Breaking change | Major (x.0.0) |
-| `docs:` | Documentation | None |
-| `chore:` | Maintenance | None |
+| `docs:` | เอกสาร | ไม่เปลี่ยน |
+| `chore:` | งานทั่วไป | ไม่เปลี่ยน |
 
-## Supported Project Types
+---
 
-The deploy script auto-detects:
+## เอกสาร
 
-- **Node.js** - Next.js, React, Vue, Express
-- **Python** - Django, Flask, FastAPI
-- **PHP** - Laravel, WordPress
-- **Static** - HTML/CSS/JS
+- [CLAUDE.md](CLAUDE.md) - คู่มือหลักสำหรับ Claude
+- [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) - คู่มือพัฒนา
+- [docs/GITHUB_SECRETS_SETUP.md](docs/GITHUB_SECRETS_SETUP.md) - ตั้งค่า Secrets
+- [docs/TASKS.md](docs/TASKS.md) - ติดตามงาน
 
-## For Claude
+---
 
-See [CLAUDE.md](CLAUDE.md) for Claude-specific instructions.
+## การแจ้งเตือน Line
+
+เพิ่ม `LINE_NOTIFY_TOKEN` ใน GitHub Secrets เพื่อรับการแจ้งเตือน:
+- ✅ Deploy สำเร็จ
+- ❌ Deploy ล้มเหลว
+- 🚨 Error เกิน threshold (ต้องการมนุษย์ตรวจสอบ)
+
+---
 
 ## License
 
-MIT
+MIT License - ใช้งานได้ฟรีทั้งส่วนตัวและเชิงพาณิชย์
+
+---
+
+<div align="center">
+
+**Made with ❤️ by Xclaude Framework Team**
+
+*"Just tell Claude what you want"*
+
+</div>

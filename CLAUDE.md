@@ -1,266 +1,449 @@
-# Claude Project Guide
+# 🚀 XCLAUDE FRAMEWORK - คู่มือสำหรับ Claude
 
-> This file helps Claude understand and work with this project effectively.
-
-## Project Overview
-
-This is a **GitHub Template Repository** designed for professional development workflow with:
-- Automatic versioning and releases
-- Auto-deployment to server
-- CI/CD pipeline
-- Claude-optimized documentation
-
-## Quick Reference
-
-### Project Structure
+> **"Just tell Claude what you want"**
+> แค่บอก Claude ว่าต้องการอะไร - ที่เหลือ Claude จัดการเอง
 
 ```
-.
-├── .github/
-│   └── workflows/
-│       ├── release.yml      # Auto-release on merge to main
-│       └── deploy.yml       # Auto-deploy on merge to main
-├── .claude/
-│   └── commands/            # Slash commands for Claude
-├── docs/
-│   ├── DEVELOPMENT.md       # Development guidelines
-│   ├── TASKS.md             # Task tracking (Claude writes here)
-│   └── GITHUB_SECRETS_SETUP.md
-├── deploy.sh                # Smart deploy script with feedback
-├── install.sh               # Server setup wizard
-├── CLAUDE.md                # This file (Claude's guide)
-├── CHANGELOG.md             # Auto-generated changelog
-└── README.md                # Project documentation
+╔═══════════════════════════════════════════════════════════════════════════╗
+║   __  __    ___ _                 _        ___                            ║
+║   \ \/ /   / __| |__ _ _  _ ___ _| |___   | __| _ __ _ _ __  ___          ║
+║    >  <   | (__| / _` | || / _` | / -_)  | _| '_/ _` | '  \/ -_)         ║
+║   /_/\_\   \___|_\__,_|\_,_\__,_|_\___|  |_||_| \__,_|_|_|_\___|         ║
+║                                                                           ║
+║   Version 1.0.0 | AI-Powered Development Framework                       ║
+╚═══════════════════════════════════════════════════════════════════════════╝
 ```
 
-### Key Files for Claude
+---
 
-| File | Purpose |
-|------|---------|
-| `CLAUDE.md` | Main guide (this file) - read first |
-| `docs/TASKS.md` | Current tasks and progress tracking |
-| `docs/DEVELOPMENT.md` | Development rules and patterns |
-| `.deploy-feedback.json` | Deploy results (check after deploy) |
-| `CHANGELOG.md` | Version history |
+## 📋 สารบัญ
 
-## Development Workflow
+1. [ภาพรวม Framework](#ภาพรวม-framework)
+2. [โครงสร้างโปรเจค](#โครงสร้างโปรเจค)
+3. [วิธีทำงานของ Claude](#วิธีทำงานของ-claude)
+4. [คำสั่งที่ใช้บ่อย](#คำสั่งที่ใช้บ่อย)
+5. [การ Deploy อัตโนมัติ](#การ-deploy-อัตโนมัติ)
+6. [การทดสอบและตรวจสอบ](#การทดสอบและตรวจสอบ)
+7. [การแจ้งเตือน](#การแจ้งเตือน)
+8. [การแก้ไขปัญหา](#การแก้ไขปัญหา)
 
-### 1. Understanding a Task
+---
 
-When given a task:
-1. Read `docs/TASKS.md` to understand context
-2. Check existing code patterns
-3. Plan the implementation
-4. Document in `docs/TASKS.md`
+## 🎯 ภาพรวม Framework
 
-### 2. Making Changes
+### สิ่งที่ Claude ทำได้อัตโนมัติ
+
+| ความสามารถ | รายละเอียด |
+|------------|-----------|
+| 🖥️ **เขียนโค้ด** | พัฒนา PHP, HTML, CSS, JavaScript ตามที่สั่ง |
+| 🧪 **ทดสอบ** | รันเทสต์อัตโนมัติและตรวจสอบผลลัพธ์ |
+| 🚀 **Deploy** | Commit, Push, และ Deploy ขึ้น Server |
+| 👁️ **ตรวจหน้าเว็บ** | เปิด URL จริงและวิเคราะห์ผลลัพธ์ |
+| 🔧 **แก้ไขอัตโนมัติ** | หากมี error จะพยายามแก้ไขจนสำเร็จ |
+| 📱 **แจ้งเตือน** | ส่งแจ้งเตือนผ่าน Line OA เมื่อมีปัญหา |
+| 🔒 **Security Scan** | ตรวจช่องโหว่ความปลอดภัย |
+| ⚡ **Performance** | วัดและปรับปรุงความเร็ว |
+
+### Tech Stack
+
+- **Backend:** PHP 8.2+ (Modern PHP)
+- **CSS Framework:** Tailwind CSS 3.x
+- **JavaScript:** Alpine.js 3.x + HTMX
+- **Build Tool:** Vite
+- **Web Server:** Nginx / Apache
+
+---
+
+## 📁 โครงสร้างโปรเจค
+
+```
+xclaude-project/
+├── .xclaude/                    # ⚙️ Core Framework Config
+│   ├── config.yml               # การตั้งค่าหลัก
+│   ├── actions/                 # GitHub Actions templates
+│   ├── templates/               # โค้ด templates
+│   └── modules/                 # โมดูลเสริม
+│
+├── .github/workflows/           # 🔄 GitHub Actions
+│   ├── deploy.yml               # Auto deploy
+│   ├── release.yml              # Auto release
+│   ├── test.yml                 # Auto test
+│   └── security.yml             # Security scan
+│
+├── public/                      # 🌐 Web Root (Document Root)
+│   ├── index.php                # Entry point
+│   ├── css/                     # Compiled CSS
+│   ├── js/                      # Compiled JS
+│   └── assets/                  # รูปภาพ, fonts
+│
+├── src/                         # 💻 Source Code
+│   ├── pages/                   # หน้าเว็บต่างๆ
+│   ├── components/              # PHP Components
+│   ├── layouts/                 # Layout templates
+│   └── api/                     # API endpoints
+│
+├── config/                      # ⚙️ App Configuration
+│   ├── app.php                  # App settings
+│   ├── database.php             # Database settings
+│   └── routes.php               # URL routes
+│
+├── storage/                     # 📦 Storage
+│   ├── logs/                    # Log files
+│   ├── cache/                   # Cache files
+│   └── uploads/                 # User uploads
+│
+├── tests/                       # 🧪 Tests
+│   ├── unit/                    # Unit tests
+│   └── e2e/                     # End-to-end tests
+│
+├── scripts/                     # 🛠️ Scripts
+│   ├── deploy.sh                # Smart deploy script
+│   ├── install.sh               # Installation wizard
+│   └── notify.sh                # Notification script
+│
+├── docs/                        # 📚 Documentation
+│   ├── DEVELOPMENT.md           # Development guide
+│   ├── TASKS.md                 # Task tracker
+│   └── API.md                   # API documentation
+│
+├── .env                         # 🔐 Environment (ไม่ commit)
+├── .env.example                 # 📝 Environment template
+├── CLAUDE.md                    # 🤖 ไฟล์นี้!
+└── README.md                    # 📖 Project README
+```
+
+### ไฟล์สำคัญสำหรับ Claude
+
+| ไฟล์ | หน้าที่ | อ่านเมื่อไหร่ |
+|------|--------|-------------|
+| `CLAUDE.md` | คู่มือหลัก | เริ่มต้นทุกครั้ง |
+| `.xclaude/config.yml` | การตั้งค่า framework | ต้องการรู้ config |
+| `docs/TASKS.md` | งานที่ต้องทำ | รับงานใหม่ |
+| `.env` | ค่า secrets | ต้องการ URL, Keys |
+| `.deploy-feedback.json` | ผลการ deploy | หลัง deploy |
+
+---
+
+## 🤖 วิธีทำงานของ Claude
+
+### ขั้นตอนมาตรฐาน
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  👤 User: "เพิ่มหน้า login"                                   │
+└─────────────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────────────┐
+│  📖 STEP 1: อ่านและเข้าใจ                                     │
+│  - อ่าน CLAUDE.md (ไฟล์นี้)                                   │
+│  - อ่าน .xclaude/config.yml                                 │
+│  - อ่าน docs/TASKS.md                                       │
+│  - สำรวจโค้ดที่มีอยู่                                          │
+└─────────────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────────────┐
+│  📝 STEP 2: วางแผน                                           │
+│  - ใช้ TodoWrite เขียนแผนงาน                                  │
+│  - แจ้ง user ว่าจะทำอะไรบ้าง                                   │
+└─────────────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────────────┐
+│  💻 STEP 3: พัฒนา                                            │
+│  - เขียนโค้ด PHP + HTML + CSS (Tailwind)                    │
+│  - ใช้ Alpine.js สำหรับ interactivity                        │
+│  - ใช้ HTMX สำหรับ AJAX                                      │
+└─────────────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────────────┐
+│  🧪 STEP 4: ทดสอบในเครื่อง                                    │
+│  - ตรวจ syntax errors                                       │
+│  - รัน unit tests ถ้ามี                                      │
+└─────────────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────────────┐
+│  📤 STEP 5: Commit & Push                                   │
+│  - git add .                                                │
+│  - git commit -m "feat: เพิ่มหน้า login"                      │
+│  - git push                                                 │
+└─────────────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────────────┐
+│  🚀 STEP 6: Deploy อัตโนมัติ                                  │
+│  - GitHub Actions ทำงาน                                     │
+│  - deploy.sh รันบน server                                   │
+│  - สร้าง .deploy-feedback.json                              │
+└─────────────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────────────┐
+│  👁️ STEP 7: ตรวจสอบผลลัพธ์                                   │
+│  - เปิด URL จริงด้วย WebFetch                                │
+│  - วิเคราะห์หน้าเว็บ                                          │
+│  - ตรวจว่าทำงานถูกต้องไหม                                     │
+└─────────────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────────────┐
+│  ✅ STEP 8: รายงานผล                                         │
+│  หาก สำเร็จ → แจ้ง user พร้อม URL                            │
+│  หาก ล้มเหลว → แก้ไขอัตโนมัติ (กลับไป STEP 3)                  │
+│  หาก ล้มเหลวเกิน 3 ครั้ง → แจ้ง Line OA + สร้าง Issue          │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### วิธีตรวจสอบหน้าเว็บ
+
+Claude จะใช้ `WebFetch` เพื่อเปิดหน้าเว็บจริงและวิเคราะห์:
+
+```
+1. อ่าน SITE_URL จาก .env หรือ .xclaude/config.yml
+2. ใช้ WebFetch tool เปิด URL
+3. วิเคราะห์ HTML ที่ได้
+4. ตรวจว่า:
+   - หน้าโหลดสำเร็จ (ไม่มี error)
+   - มี element ที่ต้องการ
+   - ไม่มี broken links
+   - CSS/JS โหลดถูกต้อง
+```
+
+---
+
+## ⌨️ คำสั่งที่ใช้บ่อย
+
+### Slash Commands สำหรับ Claude
+
+| คำสั่ง | ใช้งาน |
+|--------|--------|
+| `/new-feature ชื่อ` | เริ่มพัฒนาฟีเจอร์ใหม่ |
+| `/fix-bug รายละเอียด` | แก้ไขบั๊ก |
+| `/deploy` | Deploy ขึ้น production |
+| `/deploy-status` | เช็คสถานะ deploy |
+| `/verify-site` | เปิดเว็บตรวจสอบ |
+| `/security-scan` | สแกนช่องโหว่ |
+| `/release` | สร้าง release ใหม่ |
+
+### Commit Message Convention
 
 ```bash
-# Create feature branch
-git checkout -b feature/description
+# ฟีเจอร์ใหม่ → Version Minor (1.x.0)
+git commit -m "feat: เพิ่มหน้า login"
 
-# Make changes...
+# แก้บั๊ก → Version Patch (1.0.x)
+git commit -m "fix: แก้ปัญหาหน้าไม่โหลด"
 
-# Commit with conventional commits
-git commit -m "feat: add new feature"
-git commit -m "fix: resolve bug"
-git commit -m "docs: update documentation"
+# Breaking Change → Version Major (x.0.0)
+git commit -m "feat!: เปลี่ยนโครงสร้าง API"
 
-# Create PR to main
+# อัปเดทเอกสาร → ไม่เปลี่ยน version
+git commit -m "docs: อัปเดทคู่มือ"
 ```
 
-### 3. Commit Message Convention
+---
 
-Use these prefixes for automatic versioning:
+## 🚀 การ Deploy อัตโนมัติ
 
-| Prefix | Version Bump | Example |
-|--------|--------------|---------|
-| `feat:` | Minor (1.x.0) | `feat: add user authentication` |
-| `fix:` | Patch (1.0.x) | `fix: resolve login error` |
-| `feat!:` or `BREAKING CHANGE:` | Major (x.0.0) | `feat!: redesign API` |
-| `docs:` | No bump | `docs: update README` |
-| `chore:` | No bump | `chore: update dependencies` |
-| `refactor:` | Patch | `refactor: simplify logic` |
+### Flow การ Deploy
 
-### 4. Merging and Deployment
+```
+Merge to main
+      ↓
+GitHub Actions: release.yml
+      ↓
+สร้าง Version Tag (v1.2.3)
+      ↓
+GitHub Actions: deploy.yml
+      ↓
+SSH เข้า Server → รัน deploy.sh
+      ↓
+deploy.sh ทำงาน:
+  1. git pull
+  2. composer install
+  3. npm install && npm run build
+  4. Clear cache
+  5. Health check
+      ↓
+สร้าง .deploy-feedback.json
+      ↓
+แจ้ง Line OA (ถ้าตั้งค่าไว้)
+```
 
-When PR is merged to `main`:
-1. **release.yml** runs → Creates new version tag and release
-2. **deploy.yml** runs → Deploys to server automatically
+### อ่านผล Deploy
 
-## Deployment
-
-### Checking Deploy Status
-
-After merging to main, check:
-
-1. **GitHub Actions** - See workflow run status
-2. **`.deploy-feedback.json`** - Detailed deploy feedback
-3. **Site URL** - Verify the changes are live
-
-### Deploy Feedback Format
+หลัง deploy ให้อ่าน `.deploy-feedback.json`:
 
 ```json
 {
-  "status": "success|failed",
-  "project_type": "detected type",
-  "steps": ["completed steps"],
-  "errors": ["any errors"],
-  "warnings": ["any warnings"],
-  "urls_to_check": ["/", "/api/health"],
-  "suggestions": ["fix suggestions if failed"]
+  "status": "success",
+  "version": "v1.2.3",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "project_type": "php",
+  "steps_completed": [
+    "git_pull",
+    "composer_install",
+    "npm_build",
+    "cache_clear",
+    "health_check"
+  ],
+  "site_url": "https://example.com",
+  "urls_to_check": ["/", "/login", "/api/health"],
+  "errors": [],
+  "warnings": []
 }
 ```
 
-### If Deployment Fails
+### หาก Deploy ล้มเหลว
 
-1. Check `.deploy-feedback.json` for errors
-2. Review GitHub Actions logs
-3. Fix the issue in code
-4. Create new commit and push
-5. Deployment will retry automatically
+1. อ่าน `errors` ใน `.deploy-feedback.json`
+2. อ่าน `suggestions` สำหรับวิธีแก้
+3. แก้ไขโค้ด
+4. Commit & Push ใหม่
+5. หากยังล้มเหลว → ระบบจะแจ้ง Line OA
 
-## For Claude: How to Complete Tasks
+---
 
-### Standard Workflow
+## 🧪 การทดสอบและตรวจสอบ
+
+### 1. ตรวจสอบหน้าเว็บ (Visual Verification)
 
 ```
-1. User requests feature/fix
-2. Claude reads CLAUDE.md (this file)
-3. Claude checks docs/TASKS.md for context
-4. Claude implements the change
-5. Claude updates docs/TASKS.md with progress
-6. Claude commits with proper message
-7. Claude creates PR or merges to main
-8. Auto-release creates new version
-9. Auto-deploy updates the server
-10. Claude verifies by checking feedback
+Claude ทำ:
+1. WebFetch(SITE_URL + "/path")
+2. วิเคราะห์ HTML response
+3. ตรวจ:
+   - Status code = 200
+   - มี <title> ที่ถูกต้อง
+   - มี content หลักๆ
+   - ไม่มี PHP errors
+   - ไม่มี JavaScript errors
 ```
 
-### Creating a PR
+### 2. Security Scan
 
-```bash
-# After making changes
-git add .
-git commit -m "feat: implement feature X"
-git push -u origin feature/description
+GitHub Action `security.yml` จะ:
+- ตรวจ SQL Injection
+- ตรวจ XSS
+- ตรวจ CSRF
+- ตรวจ dependency vulnerabilities
 
-# Create PR using gh CLI
-gh pr create --title "feat: Feature X" --body "Description..."
+### 3. Performance Check
+
+- วัด page load time
+- ตรวจ Lighthouse score
+- แนะนำการปรับปรุง
+
+---
+
+## 📱 การแจ้งเตือน
+
+### Line OA Notification
+
+ระบบจะส่งแจ้งเตือนเมื่อ:
+
+| เหตุการณ์ | ข้อความ |
+|----------|---------|
+| Deploy สำเร็จ | ✅ Deploy v1.2.3 สำเร็จ! |
+| Deploy ล้มเหลว | ❌ Deploy ล้มเหลว: [error] |
+| Error เกิน threshold | ⚠️ พบปัญหาต่อเนื่อง ต้องตรวจสอบ |
+| Security Alert | 🔒 พบช่องโหว่ความปลอดภัย |
+
+### ตั้งค่า Line OA
+
+ใน `.env`:
+```env
+LINE_CHANNEL_TOKEN=your_channel_token
+LINE_NOTIFY_TOKEN=your_notify_token
 ```
 
-### Merging to Main
+---
 
-```bash
-# If authorized to merge directly
-git checkout main
-git merge feature/description
-git push origin main
+## 🔧 การแก้ไขปัญหา
+
+### ปัญหาที่พบบ่อยและวิธีแก้
+
+| ปัญหา | สาเหตุ | วิธีแก้ |
+|-------|--------|--------|
+| Deploy ไม่ทำงาน | SSH key ไม่ถูกต้อง | ตรวจ `SSH_PRIVATE_KEY` secret |
+| หน้าเว็บ 500 error | PHP syntax error | ตรวจ error log, แก้โค้ด |
+| CSS ไม่โหลด | Build ไม่สำเร็จ | รัน `npm run build` ใหม่ |
+| Database error | ตั้งค่าไม่ถูก | ตรวจ `.env` database settings |
+
+### วิธีที่ Claude แก้ปัญหาอัตโนมัติ
+
+```
+1. ตรวจพบ error
+      ↓
+2. อ่าน error message
+      ↓
+3. วิเคราะห์สาเหตุ
+      ↓
+4. แก้ไขโค้ด
+      ↓
+5. Commit & Push ใหม่
+      ↓
+6. รอ deploy ใหม่
+      ↓
+7. ตรวจสอบอีกครั้ง
+      ↓
+8. หากยังไม่สำเร็จ (เกิน 3 ครั้ง)
+      ↓
+9. แจ้ง Line OA + สร้าง GitHub Issue
 ```
 
-### After Deploy: Verify Changes
+---
 
-1. Check GitHub Actions completed successfully
-2. Read deploy feedback:
-   ```bash
-   cat .deploy-feedback.json
-   ```
-3. Visit the URLs mentioned in `urls_to_check`
-4. If errors, check `errors` and `suggestions` fields
+## 🎓 สำหรับ Claude: Quick Reference
 
-## Project-Specific Information
+### เมื่อได้รับงานใหม่
 
-### Site URL
-Check `.deploy.config` or GitHub Secrets for `SITE_URL`
-
-### Server Details
-- Host: Configured in `SERVER_HOST` secret
-- User: Configured in `SERVER_USER` secret
-- Path: Configured in `DEPLOY_PATH` secret
-
-### Tech Stack
-> Update this section based on actual project
-
-- Framework: [Detected automatically by deploy.sh]
-- Database: [If applicable]
-- Other: [Any specific details]
-
-## Task Documentation
-
-### docs/TASKS.md Format
-
-```markdown
-# Current Tasks
-
-## In Progress
-- [ ] Task description
-  - Status: Working on X
-  - Branch: feature/task-name
-
-## Completed
-- [x] Previous task
-  - Completed: 2024-01-01
-  - Version: v1.2.0
-
-## Backlog
-- [ ] Future task
+```
+1. อ่าน CLAUDE.md (ไฟล์นี้)
+2. อ่าน .xclaude/config.yml
+3. อ่าน docs/TASKS.md
+4. สำรวจโค้ดที่เกี่ยวข้อง
+5. วางแผนด้วย TodoWrite
+6. เริ่มพัฒนา
 ```
 
-### Updating Task Status
+### เมื่อต้อง Deploy
 
-When working on tasks, update `docs/TASKS.md`:
-1. Move task to "In Progress"
-2. Add status notes
-3. When done, move to "Completed"
-4. Add completion date and version
-
-## Troubleshooting Guide
-
-### Common Issues
-
-| Issue | Solution |
-|-------|----------|
-| Deploy fails with SSH error | Check `SSH_PRIVATE_KEY` secret |
-| Health check fails | Verify `SITE_URL` is correct |
-| Build fails | Check project dependencies |
-| Permission denied | Check `DEPLOY_PATH` permissions |
-
-### Reading Deploy Logs
-
-```bash
-# On server
-cat .deploy.log
-
-# Or check GitHub Actions artifacts
-# Download deploy-log-{run_number}
+```
+1. git add -A
+2. git commit -m "type: description"
+3. git push origin branch-name
+4. รอ GitHub Actions
+5. อ่าน .deploy-feedback.json
+6. WebFetch ตรวจหน้าเว็บ
 ```
 
-## Claude Slash Commands
+### เมื่อพบ Error
 
-Available in `.claude/commands/`:
+```
+1. อ่าน error message ให้ละเอียด
+2. หาสาเหตุในโค้ด
+3. แก้ไข
+4. ทดสอบ
+5. Deploy ใหม่
+6. หากเกิน 3 ครั้ง → แจ้ง user + Line OA
+```
 
-| Command | Description |
-|---------|-------------|
-| `/deploy-status` | Check deployment status |
-| `/new-feature` | Start new feature workflow |
-| `/fix-bug` | Start bug fix workflow |
-| `/release` | Prepare release notes |
+### Environment Variables ที่สำคัญ
 
-## Important Notes for Claude
+| Variable | ใช้งาน |
+|----------|--------|
+| `SITE_URL` | URL หลักของเว็บไซต์ |
+| `STAGING_URL` | URL staging |
+| `LINE_CHANNEL_TOKEN` | แจ้งเตือน Line |
+| `DB_HOST`, `DB_NAME`... | Database connection |
 
-1. **Always read this file first** when starting work
-2. **Check docs/TASKS.md** for current context
-3. **Use conventional commits** for proper versioning
-4. **Update documentation** when making changes
-5. **Verify deployment** after merging to main
-6. **Report issues** if deployment fails
+---
 
-## Human Setup Required
+## 📜 License
 
-Before Claude can fully automate deployments, humans must:
+MIT License - สร้างโดย Xclaude Framework Team
 
-1. **Run `./install.sh` on the server** to generate SSH keys
-2. **Add GitHub Secrets** (SSH_PRIVATE_KEY, SERVER_HOST, etc.)
-3. **Ensure server has required dependencies** (Node.js, Python, etc.)
+---
 
-See `docs/GITHUB_SECRETS_SETUP.md` for detailed instructions.
+> **Claude จำไว้:**
+> 1. ทำทุกอย่างเองจนเสร็จ
+> 2. ตรวจสอบผลลัพธ์ด้วย WebFetch
+> 3. แก้ไขจนกว่าจะสำเร็จ
+> 4. แจ้ง user เมื่อเสร็จพร้อม URL
+> 5. หากติดปัญหาเกิน 3 ครั้ง → แจ้ง Line OA + สร้าง Issue

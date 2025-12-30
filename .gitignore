@@ -1,3 +1,7 @@
+# ╔═══════════════════════════════════════════════════════════════════════════╗
+# ║                    XCLAUDE FRAMEWORK - Gitignore                          ║
+# ╚═══════════════════════════════════════════════════════════════════════════╝
+
 # Dependencies
 node_modules/
 vendor/
@@ -12,7 +16,7 @@ build/
 .nuxt/
 out/
 
-# Environment files
+# Environment files (NEVER commit these!)
 .env
 .env.local
 .env.*.local
@@ -23,26 +27,34 @@ out/
 .vscode/
 *.swp
 *.swo
+*.sublime-*
 
 # OS
 .DS_Store
 Thumbs.db
+ehthumbs.db
 
 # Logs
 *.log
+storage/logs/*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
 # Deploy artifacts
-.deploy.log
 .deploy-feedback.json
+storage/cache/*
+!storage/cache/.gitkeep
 
-# SSH keys (never commit these!)
+# SSH keys (NEVER commit these!)
 *.pem
 *_rsa
 *_ed25519
 id_*
+.ssh/
+
+# Error tracking
+storage/cache/.error_count
 
 # Coverage
 coverage/
@@ -54,3 +66,14 @@ tmp/
 temp/
 *.tmp
 *.temp
+
+# Uploads (user content)
+storage/uploads/*
+!storage/uploads/.gitkeep
+
+# PHP specific
+.php_cs.cache
+.phpunit.result.cache
+
+# Composer
+composer.phar

@@ -1,0 +1,128 @@
+# ╔═══════════════════════════════════════════════════════════════════════════╗
+# ║                         XCLAUDE FRAMEWORK CONFIG                          ║
+# ║                    "Just tell Claude what you want"                       ║
+# ╚═══════════════════════════════════════════════════════════════════════════╝
+#
+# ไฟล์ตั้งค่าหลักของ Xclaude Framework
+# Claude จะอ่านไฟล์นี้เพื่อเข้าใจโครงสร้างและการตั้งค่าโปรเจค
+# This is the main configuration file for Xclaude Framework
+
+framework:
+  name: "Xclaude Framework"
+  version: "1.0.0"
+  description: "AI-Powered Development Framework - Just tell Claude what you want"
+  language: "th"  # ภาษาหลัก: th | en
+
+# ═══════════════════════════════════════════════════════════════════════════
+# การตั้งค่าโปรเจค (Project Settings)
+# ═══════════════════════════════════════════════════════════════════════════
+project:
+  name: "${PROJECT_NAME}"
+  type: "php"  # php | nextjs | vue | python | static
+  stack:
+    - php: "8.2+"
+    - tailwindcss: "3.x"
+    - alpinejs: "3.x"
+    - htmx: "1.x"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# การ Deploy (Deployment Settings)
+# ═══════════════════════════════════════════════════════════════════════════
+deployment:
+  provider: "vps"  # vps | vercel | railway | docker
+
+  vps:
+    host: "${SERVER_HOST}"
+    user: "${SERVER_USER}"
+    path: "${DEPLOY_PATH}"
+    php_version: "8.2"
+    web_server: "nginx"  # nginx | apache
+
+  environments:
+    production:
+      url: "${SITE_URL}"
+      branch: "main"
+      auto_deploy: true
+    staging:
+      url: "${STAGING_URL}"
+      branch: "develop"
+      auto_deploy: true
+
+# ═══════════════════════════════════════════════════════════════════════════
+# การทดสอบ (Testing Settings)
+# ═══════════════════════════════════════════════════════════════════════════
+testing:
+  visual:
+    enabled: true
+    screenshot_on_deploy: true
+    compare_with_previous: true
+
+  e2e:
+    enabled: true
+    framework: "playwright"  # playwright | cypress
+
+  security:
+    enabled: true
+    scan_on_deploy: true
+
+  performance:
+    enabled: true
+    lighthouse: true
+
+# ═══════════════════════════════════════════════════════════════════════════
+# การแจ้งเตือน (Notification Settings)
+# ═══════════════════════════════════════════════════════════════════════════
+notifications:
+  line_oa:
+    enabled: true
+    channel_token: "${LINE_CHANNEL_TOKEN}"
+    notify_on:
+      - deploy_success
+      - deploy_failed
+      - security_alert
+      - error_threshold_exceeded
+    error_threshold: 3  # แจ้งเตือนเมื่อ error เกิน 3 ครั้งติดต่อกัน
+
+  github:
+    create_issue_on_failure: true
+    labels:
+      - "xclaude-alert"
+      - "needs-human"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Claude AI Settings
+# ═══════════════════════════════════════════════════════════════════════════
+claude:
+  auto_fix:
+    enabled: true
+    max_attempts: 5  # พยายามแก้ไขสูงสุด 5 ครั้ง
+
+  visual_verification:
+    enabled: true
+    check_urls:
+      - "/"
+      - "/api/health"
+
+  code_review:
+    enabled: true
+    check_security: true
+    check_performance: true
+
+# ═══════════════════════════════════════════════════════════════════════════
+# โมดูลที่ใช้งาน (Active Modules)
+# ═══════════════════════════════════════════════════════════════════════════
+modules:
+  - name: "php-core"
+    enabled: true
+
+  - name: "tailwind"
+    enabled: true
+
+  - name: "security-scanner"
+    enabled: true
+
+  - name: "performance-monitor"
+    enabled: true
+
+  - name: "line-notifier"
+    enabled: true

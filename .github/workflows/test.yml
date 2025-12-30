@@ -1,0 +1,57 @@
+# ╔═══════════════════════════════════════════════════════════════════════════╗
+# ║                    XCLAUDE FRAMEWORK - Test & Lint                        ║
+# ╚═══════════════════════════════════════════════════════════════════════════╝
+
+name: Test & Lint
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  php-check:
+    name: PHP Syntax Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      - name: Check PHP Syntax
+        run: |
+          find . -name "*.php" -not -path "./vendor/*" | xargs -n1 php -l
+
+      - name: PHP CodeSniffer
+        if: hashFiles('composer.json') != ''
+        run: |
+          composer global require squizlabs/php_codesniffer || true
+          ~/.composer/vendor/bin/phpcs --standard=PSR12 --ignore=vendor,storage . || true
+
+  frontend-check:
+    name: Frontend Check
+    runs-on: ubuntu-latest
+    if: hashFiles('package.json') != ''
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install
+        run: npm ci || npm install
+
+      - name: Lint
+        run: npm run lint || echo "No lint script"
+
+      - name: Build
+        run: npm run build || echo "No build script"
