@@ -1,5 +1,27 @@
 # Changelog
 
+## [v1.1.0] - 2025-12-30
+
+
+### Features
+* feat: add user authorization for Claude AI access (7e93ea4)
+* feat: make Claude API optional - notification mode fallback (3057465)
+* feat: add LINE OA + Claude AI bidirectional chat integration (38749f5)
+* feat: use LINE push message API with user ID instead of broadcast (e0392ad)
+* feat: migrate from LINE Notify to LINE OA Messaging API (1aecd5f)
+* feat: comprehensive install wizard for beginners (572ec42)
+
+### Bug Fixes
+* fix: workflow errors in deploy.yml and test.yml (6aa1f34)
+* fix: YAML syntax error in deploy.yml Line Notify conditions (8fd1b88)
+
+### Other Changes
+* Merge pull request #13 from xjanova/claude/fix-test-workflow-9Ow9x (fcc2412)
+* docs: update CHANGELOG.md for v1.0.0 [skip ci] (37e9271)
+
+---
+**Full Changelog**: https://github.com/xjanova/maintemplate1/compare/v1.0.0...v1.1.0
+
 ## [v1.0.0] - 2025-12-30
 
 
