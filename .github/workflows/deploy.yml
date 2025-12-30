@@ -132,25 +132,39 @@ jobs:
             echo "healthy=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Line Notify on Success
-        if: steps.deploy.outputs.status == 'success' && env.LINE_TOKEN_SET == 'true'
+      - name: LINE OA Notify on Success
+        if: steps.deploy.outputs.status == 'success' && env.LINE_CONFIGURED == 'true'
         env:
-          LINE_TOKEN_SET: ${{ secrets.LINE_NOTIFY_TOKEN != '' }}
+          LINE_CONFIGURED: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN != '' }}
         run: |
-          curl -s -X POST \
-            -H "Authorization: Bearer ${{ secrets.LINE_NOTIFY_TOKEN }}" \
-            -F "message=✅ Deploy สำเร็จ! URL: ${{ secrets.SITE_URL }} Commit: ${{ github.sha }}" \
-            https://notify-api.line.me/api/notify || true
+          curl -s -X POST https://api.line.me/v2/bot/message/broadcast \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}" \
+            -d '{
+              "messages": [
+                {
+                  "type": "text",
+                  "text": "✅ Deploy สำเร็จ!\n\n🌐 URL: ${{ secrets.SITE_URL }}\n📦 Commit: ${{ github.sha }}\n🏷️ Repo: ${{ github.repository }}"
+                }
+              ]
+            }' || true
 
-      - name: Line Notify on Failure
-        if: steps.deploy.outputs.status == 'failed' && env.LINE_TOKEN_SET == 'true'
+      - name: LINE OA Notify on Failure
+        if: steps.deploy.outputs.status == 'failed' && env.LINE_CONFIGURED == 'true'
         env:
-          LINE_TOKEN_SET: ${{ secrets.LINE_NOTIFY_TOKEN != '' }}
+          LINE_CONFIGURED: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN != '' }}
         run: |
-          curl -s -X POST \
-            -H "Authorization: Bearer ${{ secrets.LINE_NOTIFY_TOKEN }}" \
-            -F "message=❌ Deploy ล้มเหลว! Repo: ${{ github.repository }} Claude กำลังแก้ไข..." \
-            https://notify-api.line.me/api/notify || true
+          curl -s -X POST https://api.line.me/v2/bot/message/broadcast \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}" \
+            -d '{
+              "messages": [
+                {
+                  "type": "text",
+                  "text": "❌ Deploy ล้มเหลว!\n\n🏷️ Repo: ${{ github.repository }}\n📦 Commit: ${{ github.sha }}\n🔧 Claude กำลังแก้ไข..."
+                }
+              ]
+            }' || true
 
       - name: Create Issue on Failure
         if: steps.deploy.outputs.status == 'failed'

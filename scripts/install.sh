@@ -478,19 +478,23 @@ step_configure_environment() {
 
     # Line Notify (optional)
     echo ""
-    print_substep "Line Notifications (Optional)"
+    print_substep "LINE OA Notifications (Optional)"
     echo ""
-    echo -e "${WHITE}  Line Notify sends alerts when deploy succeeds/fails.${NC}"
+    echo -e "${WHITE}  LINE OA Messaging API sends alerts when deploy succeeds/fails.${NC}"
+    echo -e "${WHITE}  Users must add your LINE OA as friend to receive notifications.${NC}"
     echo ""
 
-    if ask_yes_no "Configure Line notifications?" "n"; then
+    if ask_yes_no "Configure LINE OA notifications?" "n"; then
         echo ""
-        echo -e "${CYAN}  Get your token at: https://notify-bot.line.me/my/${NC}"
+        echo -e "${CYAN}  Get your credentials at: https://developers.line.biz/console/${NC}"
         echo ""
-        LINE_NOTIFY_TOKEN=$(ask_question "Line Notify Token" "")
+        echo -e "${WHITE}  1. Create a Messaging API channel${NC}"
+        echo -e "${WHITE}  2. Get Channel Access Token (long-lived)${NC}"
+        echo ""
+        LINE_CHANNEL_ACCESS_TOKEN=$(ask_question "LINE Channel Access Token" "")
         CONFIGURE_LINE="yes"
     else
-        LINE_NOTIFY_TOKEN=""
+        LINE_CHANNEL_ACCESS_TOKEN=""
         CONFIGURE_LINE="no"
     fi
 
@@ -527,8 +531,8 @@ DB_NAME=$DB_NAME
 DB_USER=$DB_USER
 DB_PASS=$DB_PASS
 
-# Line Notifications
-LINE_NOTIFY_TOKEN=$LINE_NOTIFY_TOKEN
+# LINE OA Messaging API
+LINE_CHANNEL_ACCESS_TOKEN=$LINE_CHANNEL_ACCESS_TOKEN
 
 # Security
 ALLOWED_HOSTS=$DOMAIN
@@ -755,8 +759,8 @@ step_setup_github_secrets() {
     echo -e "${WHITE}  | SERVER_USER           | ${CYAN}$CURRENT_USER${NC}"
     echo -e "${WHITE}  | DEPLOY_PATH           | ${CYAN}$INSTALL_DIR${NC}"
     echo -e "${WHITE}  | SITE_URL              | ${CYAN}$SITE_URL${NC}"
-    if [ -n "$LINE_NOTIFY_TOKEN" ]; then
-    echo -e "${WHITE}  | LINE_NOTIFY_TOKEN     | ${CYAN}(Your Line Notify token)${NC}"
+    if [ -n "$LINE_CHANNEL_ACCESS_TOKEN" ]; then
+    echo -e "${WHITE}  | LINE_CHANNEL_ACCESS_TOKEN | ${CYAN}(Your LINE OA token)${NC}"
     fi
     echo -e "${WHITE}  +-----------------------+------------------------------------------+${NC}"
     echo ""
@@ -939,7 +943,7 @@ step_final_summary() {
   "configured": {
     "environment": true,
     "database": $( [ "$CONFIGURE_DB" = "yes" ] && echo "true" || echo "false" ),
-    "line_notify": $( [ "$CONFIGURE_LINE" = "yes" ] && echo "true" || echo "false" ),
+    "line_oa": $( [ "$CONFIGURE_LINE" = "yes" ] && echo "true" || echo "false" ),
     "ssh_key": $( [ -n "$SSH_KEY_FILE" ] && echo "true" || echo "false" )
   }
 }

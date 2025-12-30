@@ -344,13 +344,23 @@ GitHub Action `security.yml` จะ:
 | Error เกิน threshold | ⚠️ พบปัญหาต่อเนื่อง ต้องตรวจสอบ |
 | Security Alert | 🔒 พบช่องโหว่ความปลอดภัย |
 
-### ตั้งค่า Line OA
+### ตั้งค่า LINE OA Messaging API
 
-ใน `.env`:
-```env
-LINE_CHANNEL_TOKEN=your_channel_token
-LINE_NOTIFY_TOKEN=your_notify_token
+สร้าง LINE OA ที่ [LINE Developers Console](https://developers.line.biz/console/)
+
+**GitHub Secrets ที่ต้องตั้งค่า:**
 ```
+LINE_CHANNEL_ACCESS_TOKEN=your_channel_access_token
+```
+
+**ใน `.env` (สำหรับการพัฒนา):**
+```env
+LINE_CHANNEL_ID=your_channel_id
+LINE_CHANNEL_SECRET=your_channel_secret
+LINE_CHANNEL_ACCESS_TOKEN=your_channel_access_token
+```
+
+> หมายเหตุ: ผู้ใช้ต้อง Add Friend กับ LINE OA ก่อนจึงจะได้รับแจ้งเตือน
 
 ---
 
@@ -430,7 +440,7 @@ LINE_NOTIFY_TOKEN=your_notify_token
 |----------|--------|
 | `SITE_URL` | URL หลักของเว็บไซต์ |
 | `STAGING_URL` | URL staging |
-| `LINE_CHANNEL_TOKEN` | แจ้งเตือน Line |
+| `LINE_CHANNEL_ACCESS_TOKEN` | แจ้งเตือนผ่าน LINE OA |
 | `DB_HOST`, `DB_NAME`... | Database connection |
 
 ---
