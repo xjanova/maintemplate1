@@ -133,25 +133,23 @@ jobs:
           fi
 
       - name: Line Notify on Success
-        if: steps.deploy.outputs.status == 'success' && secrets.LINE_NOTIFY_TOKEN != ''
+        if: steps.deploy.outputs.status == 'success' && env.LINE_TOKEN_SET == 'true'
+        env:
+          LINE_TOKEN_SET: ${{ secrets.LINE_NOTIFY_TOKEN != '' }}
         run: |
           curl -s -X POST \
             -H "Authorization: Bearer ${{ secrets.LINE_NOTIFY_TOKEN }}" \
-            -F "message=✅ Deploy สำเร็จ!
-🌐 URL: ${{ secrets.SITE_URL }}
-📦 Commit: ${{ github.sha }}
-⏰ Time: $(date '+%Y-%m-%d %H:%M:%S')" \
+            -F "message=✅ Deploy สำเร็จ! URL: ${{ secrets.SITE_URL }} Commit: ${{ github.sha }}" \
             https://notify-api.line.me/api/notify || true
 
       - name: Line Notify on Failure
-        if: steps.deploy.outputs.status == 'failed' && secrets.LINE_NOTIFY_TOKEN != ''
+        if: steps.deploy.outputs.status == 'failed' && env.LINE_TOKEN_SET == 'true'
+        env:
+          LINE_TOKEN_SET: ${{ secrets.LINE_NOTIFY_TOKEN != '' }}
         run: |
           curl -s -X POST \
             -H "Authorization: Bearer ${{ secrets.LINE_NOTIFY_TOKEN }}" \
-            -F "message=❌ Deploy ล้มเหลว!
-📍 Repo: ${{ github.repository }}
-🔗 Workflow: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-Claude กำลังพยายามแก้ไข..." \
+            -F "message=❌ Deploy ล้มเหลว! Repo: ${{ github.repository }} Claude กำลังแก้ไข..." \
             https://notify-api.line.me/api/notify || true
 
       - name: Create Issue on Failure
