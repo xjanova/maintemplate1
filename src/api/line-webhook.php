@@ -16,6 +16,10 @@ $channelSecret = getenv('LINE_CHANNEL_SECRET') ?: '';
 $channelAccessToken = getenv('LINE_CHANNEL_ACCESS_TOKEN') ?: '';
 $claudeApiKey = getenv('CLAUDE_API_KEY') ?: '';
 
+// Allowed users for Claude AI (comma-separated LINE User IDs)
+// If empty, all users can use. If set, only listed users can use Claude AI
+$allowedUsers = array_filter(array_map('trim', explode(',', getenv('ALLOWED_LINE_USERS') ?: '')));
+
 // Get request body
 $requestBody = file_get_contents('php://input');
 
@@ -41,11 +45,14 @@ foreach ($events['events'] as $event) {
         $userMessage = $event['message']['text'];
         $replyToken = $event['replyToken'];
 
-        // Get Claude's response
-        $claudeResponse = askClaude($userMessage, $userId, $claudeApiKey);
+        // Check if user is authorized for Claude AI
+        $isAuthorized = empty($allowedUsers) || in_array($userId, $allowedUsers);
+
+        // Get response (Claude AI only for authorized users)
+        $response = processMessage($userMessage, $userId, $claudeApiKey, $isAuthorized);
 
         // Reply to user
-        replyMessage($replyToken, $claudeResponse, $channelAccessToken);
+        replyMessage($replyToken, $response, $channelAccessToken);
     }
 }
 
@@ -65,14 +72,27 @@ function verifySignature(string $body, string $signature, string $channelSecret)
 }
 
 /**
- * Process message - use Claude if available, otherwise simple responses
+ * Process message with authorization check
  */
-function askClaude(string $message, string $userId, string $apiKey): string {
-    // If Claude API is not configured, use simple response mode
-    if (empty($apiKey)) {
-        return getSimpleResponse($message);
+function processMessage(string $message, string $userId, string $apiKey, bool $isAuthorized): string {
+    // Check for admin commands
+    if (preg_match('/^\/myid$/i', trim($message))) {
+        return "🆔 Your LINE User ID:\n{$userId}\n\nใช้ ID นี้ใส่ใน ALLOWED_LINE_USERS";
     }
 
+    // If Claude API not configured OR user not authorized, use simple mode
+    if (empty($apiKey) || !$isAuthorized) {
+        return getSimpleResponse($message, !$isAuthorized && !empty($apiKey));
+    }
+
+    // User is authorized and Claude API is available
+    return askClaude($message, $userId, $apiKey);
+}
+
+/**
+ * Ask Claude and get response (for authorized users only)
+ */
+function askClaude(string $message, string $userId, string $apiKey): string {
     // Load conversation history
     $history = loadConversationHistory($userId);
 
@@ -110,13 +130,12 @@ function askClaude(string $message, string $userId, string $apiKey): string {
 }
 
 /**
- * Get simple response when Claude API is not configured
+ * Get simple response when Claude API is not configured or user not authorized
  * Provides basic status info and helpful messages
  */
-function getSimpleResponse(string $message): string {
+function getSimpleResponse(string $message, bool $isRestricted = false): string {
     $projectName = getenv('APP_NAME') ?: 'XClaude Project';
     $siteUrl = getenv('SITE_URL') ?: '';
-    $lowerMessage = mb_strtolower($message);
 
     // Check for status-related keywords
     if (preg_match('/(status|สถานะ|deploy|ดีพลอย)/iu', $message)) {
@@ -125,12 +144,16 @@ function getSimpleResponse(string $message): string {
 
     // Check for help keywords
     if (preg_match('/(help|ช่วย|วิธี|how)/iu', $message)) {
-        return "📋 {$projectName}\n\n" .
-               "คำสั่งที่ใช้ได้:\n" .
-               "• พิมพ์ 'status' หรือ 'สถานะ' - ดูสถานะ deploy\n" .
-               "• พิมพ์ 'url' - ดู URL ของเว็บไซต์\n" .
-               "• พิมพ์ 'help' - ดูความช่วยเหลือ\n\n" .
-               ($siteUrl ? "🌐 Website: {$siteUrl}" : "");
+        $helpText = "📋 {$projectName}\n\n" .
+                    "คำสั่งที่ใช้ได้:\n" .
+                    "• พิมพ์ 'status' หรือ 'สถานะ' - ดูสถานะ deploy\n" .
+                    "• พิมพ์ 'url' - ดู URL ของเว็บไซต์\n" .
+                    "• พิมพ์ '/myid' - ดู LINE User ID ของคุณ\n" .
+                    "• พิมพ์ 'help' - ดูความช่วยเหลือ\n\n";
+        if ($siteUrl) {
+            $helpText .= "🌐 Website: {$siteUrl}";
+        }
+        return $helpText;
     }
 
     // Check for URL keywords
@@ -148,7 +171,14 @@ function getSimpleResponse(string $message): string {
                "พิมพ์ 'help' เพื่อดูคำสั่งที่ใช้ได้";
     }
 
-    // Default response
+    // Default response - different message for restricted vs no API key
+    if ($isRestricted) {
+        return "📌 {$projectName} Bot\n\n" .
+               "🔒 คุณใช้งานโหมด AI ไม่ได้\n" .
+               "เฉพาะ Admin เท่านั้นที่ใช้ได้\n\n" .
+               "พิมพ์ 'help' เพื่อดูคำสั่งที่ใช้ได้";
+    }
+
     return "📌 {$projectName} Bot\n\n" .
            "ขณะนี้ Bot ทำงานในโหมดแจ้งเตือน\n" .
            "พิมพ์ 'help' เพื่อดูคำสั่งที่ใช้ได้\n\n" .

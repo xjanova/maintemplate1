@@ -510,8 +510,16 @@ step_configure_environment() {
             echo -e "${CYAN}  Get your API key at: https://console.anthropic.com/${NC}"
             echo ""
             CLAUDE_API_KEY=$(ask_question "Claude API Key" "")
+
+            echo ""
+            echo -e "${WHITE}  จำกัดผู้ใช้ Claude AI (optional)${NC}"
+            echo -e "${WHITE}  ใส่ LINE User ID คั่นด้วย comma หรือเว้นว่างถ้าให้ทุกคนใช้ได้${NC}"
+            echo -e "${WHITE}  พิมพ์ /myid ใน LINE เพื่อดู User ID${NC}"
+            echo ""
+            ALLOWED_LINE_USERS=$(ask_question "Allowed User IDs (เว้นว่าง=ทุกคน)" "")
         else
             CLAUDE_API_KEY=""
+            ALLOWED_LINE_USERS=""
             echo -e "${GREEN}  ✓ Bot จะทำงานในโหมดแจ้งเตือน${NC}"
         fi
         CONFIGURE_LINE="yes"
@@ -520,6 +528,7 @@ step_configure_environment() {
         LINE_CHANNEL_SECRET=""
         LINE_USER_ID=""
         CLAUDE_API_KEY=""
+        ALLOWED_LINE_USERS=""
         CONFIGURE_LINE="no"
     fi
 
@@ -560,6 +569,7 @@ DB_PASS=$DB_PASS
 LINE_CHANNEL_ACCESS_TOKEN=$LINE_CHANNEL_ACCESS_TOKEN
 LINE_CHANNEL_SECRET=$LINE_CHANNEL_SECRET
 LINE_USER_ID=$LINE_USER_ID
+ALLOWED_LINE_USERS=$ALLOWED_LINE_USERS
 
 # Claude AI (for LINE Bot)
 CLAUDE_API_KEY=$CLAUDE_API_KEY
