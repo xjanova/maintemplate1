@@ -61,14 +61,25 @@ if ($matchedRoute) {
     $pagePath = __DIR__ . '/../src/pages/' . $matchedRoute['handler'] . '.php';
 
     if (file_exists($pagePath)) {
-        // เรียกใช้ layout พื้นฐาน
-        // Use base layout
-        $pageContent = function() use ($pagePath, $params) {
+        // ตรวจสอบว่าเป็น API route หรือไม่ (ไม่ใช้ layout)
+        // Check if API route (skip layout)
+        $isApiRoute = str_starts_with($matchedRoute['handler'], 'api/');
+
+        if ($isApiRoute) {
+            // API routes: ไม่ใช้ layout, return JSON โดยตรง
+            // API routes: no layout, return JSON directly
             extract(['params' => $params]);
             include $pagePath;
-        };
+        } else {
+            // เรียกใช้ layout พื้นฐาน
+            // Use base layout
+            $pageContent = function() use ($pagePath, $params) {
+                extract(['params' => $params]);
+                include $pagePath;
+            };
 
-        include __DIR__ . '/../src/layouts/base.php';
+            include __DIR__ . '/../src/layouts/base.php';
+        }
     } else {
         http_response_code(404);
         include __DIR__ . '/../src/pages/errors/404.php';
