@@ -493,15 +493,28 @@ step_configure_environment() {
         echo -e "${WHITE}  3. Add Friend กับ OA แล้วดู Webhook event เพื่อหา User ID${NC}"
         echo ""
         LINE_CHANNEL_ACCESS_TOKEN=$(ask_question "LINE Channel Access Token" "")
+        LINE_CHANNEL_SECRET=$(ask_question "LINE Channel Secret" "")
         echo ""
         echo -e "${WHITE}  User ID ขึ้นต้นด้วย 'U' ตามด้วยตัวอักษร 33 ตัว${NC}"
         echo -e "${WHITE}  เช่น: Uxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx${NC}"
         echo ""
         LINE_USER_ID=$(ask_question "LINE User ID (ผู้รับแจ้งเตือน)" "")
+
+        echo ""
+        print_substep "Claude AI Integration"
+        echo ""
+        echo -e "${WHITE}  เพื่อให้ LINE Bot สามารถตอบคำถามได้อัจฉริยะ${NC}"
+        echo -e "${WHITE}  ต้องใช้ Claude API Key จาก Anthropic${NC}"
+        echo ""
+        echo -e "${CYAN}  Get your API key at: https://console.anthropic.com/${NC}"
+        echo ""
+        CLAUDE_API_KEY=$(ask_question "Claude API Key (optional)" "")
         CONFIGURE_LINE="yes"
     else
         LINE_CHANNEL_ACCESS_TOKEN=""
+        LINE_CHANNEL_SECRET=""
         LINE_USER_ID=""
+        CLAUDE_API_KEY=""
         CONFIGURE_LINE="no"
     fi
 
@@ -540,7 +553,11 @@ DB_PASS=$DB_PASS
 
 # LINE OA Messaging API
 LINE_CHANNEL_ACCESS_TOKEN=$LINE_CHANNEL_ACCESS_TOKEN
+LINE_CHANNEL_SECRET=$LINE_CHANNEL_SECRET
 LINE_USER_ID=$LINE_USER_ID
+
+# Claude AI (for LINE Bot)
+CLAUDE_API_KEY=$CLAUDE_API_KEY
 
 # Security
 ALLOWED_HOSTS=$DOMAIN
@@ -769,7 +786,11 @@ step_setup_github_secrets() {
     echo -e "${WHITE}  | SITE_URL              | ${CYAN}$SITE_URL${NC}"
     if [ -n "$LINE_CHANNEL_ACCESS_TOKEN" ]; then
     echo -e "${WHITE}  | LINE_CHANNEL_ACCESS_TOKEN | ${CYAN}(Your LINE OA token)${NC}"
+    echo -e "${WHITE}  | LINE_CHANNEL_SECRET   | ${CYAN}(Your LINE channel secret)${NC}"
     echo -e "${WHITE}  | LINE_USER_ID          | ${CYAN}$LINE_USER_ID${NC}"
+    fi
+    if [ -n "$CLAUDE_API_KEY" ]; then
+    echo -e "${WHITE}  | CLAUDE_API_KEY        | ${CYAN}(Your Claude API key)${NC}"
     fi
     echo -e "${WHITE}  +-----------------------+------------------------------------------+${NC}"
     echo ""
